@@ -27,11 +27,11 @@ def seed():
     global users, locations, access_logs
 
     locations.extend([
-        {"id": "loc-001", "name": "Laboratório de Informática 1", "building": "Bloco A", "floor": "1", "active": True, "created_at": datetime.utcnow().isoformat()},
-        {"id": "loc-002", "name": "Laboratório de Informática 2", "building": "Bloco A", "floor": "2", "active": True, "created_at": datetime.utcnow().isoformat()},
-        {"id": "loc-003", "name": "Sala de Aula 101",             "building": "Bloco B", "floor": "1", "active": True, "created_at": datetime.utcnow().isoformat()},
-        {"id": "loc-004", "name": "Biblioteca",                   "building": "Bloco C", "floor": "1", "active": True, "created_at": datetime.utcnow().isoformat()},
-        {"id": "loc-005", "name": "Sala dos Professores",         "building": "Bloco B", "floor": "2", "active": True, "created_at": datetime.utcnow().isoformat()},
+        {"id": "loc-001", "name": "Laboratório de Informática 1", "building": "Bloco A", "floor": "1", "active": True, "created_at": datetime.utcnow().isoformat() + "Z"},
+        {"id": "loc-002", "name": "Laboratório de Informática 2", "building": "Bloco A", "floor": "2", "active": True, "created_at": datetime.utcnow().isoformat() + "Z"},
+        {"id": "loc-003", "name": "Sala de Aula 101",             "building": "Bloco B", "floor": "1", "active": True, "created_at": datetime.utcnow().isoformat() + "Z"},
+        {"id": "loc-004", "name": "Biblioteca",                   "building": "Bloco C", "floor": "1", "active": True, "created_at": datetime.utcnow().isoformat() + "Z"},
+        {"id": "loc-005", "name": "Sala dos Professores",         "building": "Bloco B", "floor": "2", "active": True, "created_at": datetime.utcnow().isoformat() + "Z"},
     ])
 
     seed_users = [

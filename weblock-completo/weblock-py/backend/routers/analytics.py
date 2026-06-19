@@ -13,7 +13,7 @@ def get_analytics(period: str = Query("7d"), current_user: dict = Depends(requir
     seconds = PERIODS.get(period, PERIODS["7d"])
     since = datetime.utcnow() - timedelta(seconds=seconds)
 
-    filtered = [l for l in access_logs if datetime.fromisoformat(l["timestamp"]) >= since]
+    filtered = [l for l in access_logs if datetime.fromisoformat(l["timestamp"].replace("Z", "")) >= since]
 
     total      = len(filtered)
     permitidos = sum(1 for l in filtered if l["result"] == "permitido")
@@ -40,8 +40,9 @@ def get_analytics(period: str = Query("7d"), current_user: dict = Depends(requir
     # Por hora
     by_hour = [{"hour": h, "total": 0} for h in range(24)]
     for l in filtered:
-        h = datetime.fromisoformat(l["timestamp"]).hour
-        by_hour[h]["total"] += 1
+        dt_utc = datetime.fromisoformat(l["timestamp"].replace("Z", ""))
+        dt_local = dt_utc - timedelta(hours=3)
+        by_hour[dt_local.hour]["total"] += 1
 
     # Por dia
     by_day: dict = {}

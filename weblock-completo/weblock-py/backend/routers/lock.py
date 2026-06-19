@@ -44,7 +44,7 @@ def request_access(body: AccessRequest):
 @router.post("/event")
 def lock_event(body: LockEvent):
     print(f"[LOCK EVENT] {body.eventType} @ {body.locationId} | {body.description}")
-    return {"received": True, "timestamp": datetime.utcnow().isoformat()}
+    return {"received": True, "timestamp": datetime.utcnow().isoformat() + "Z"}
 
 
 def _build_log(user_id, user_name, user_role, location_id, location_name, result, reason, device_ip):
@@ -53,7 +53,7 @@ def _build_log(user_id, user_name, user_role, location_id, location_name, result
         "user_id": user_id, "user_name": user_name, "user_role": user_role,
         "location_id": location_id, "location_name": location_name,
         "result": result, "reason": reason,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.utcnow().isoformat() + "Z",
         "device_ip": device_ip,
     }
 

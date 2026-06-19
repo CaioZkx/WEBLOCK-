@@ -49,8 +49,8 @@ def create_user(body: UserCreate, current_user: dict = Depends(require_admin)):
         "role": body.role,
         "matricula": body.matricula,
         "active": True,
-        "created_at": datetime.utcnow().isoformat(),
-        "updated_at": datetime.utcnow().isoformat(),
+        "created_at": datetime.utcnow().isoformat() + "Z",
+        "updated_at": datetime.utcnow().isoformat() + "Z",
     }
     users.append(new_user)
     return safe_user(new_user)
@@ -71,7 +71,7 @@ def update_user(user_id: str, body: UserUpdate, current_user: dict = Depends(req
     if body.matricula is not None: user["matricula"] = body.matricula
     if body.active is not None:    user["active"]    = body.active
     if body.password: user["password"] = hash_password(body.password)
-    user["updated_at"] = datetime.utcnow().isoformat()
+    user["updated_at"] = datetime.utcnow().isoformat() + "Z"
     return safe_user(user)
 
 
@@ -83,5 +83,5 @@ def delete_user(user_id: str, current_user: dict = Depends(require_admin)):
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")
     user["active"] = False
-    user["updated_at"] = datetime.utcnow().isoformat()
+    user["updated_at"] = datetime.utcnow().isoformat() + "Z"
     return {"message": "Usuário desativado com sucesso."}

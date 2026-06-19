@@ -15,7 +15,7 @@ def list_locations(current_user: dict = Depends(get_current_user)):
 
 @router.post("", status_code=201)
 def create_location(body: LocationCreate, current_user: dict = Depends(require_admin)):
-    loc = {"id": str(uuid.uuid4()), "name": body.name, "building": body.building or "", "floor": body.floor or "", "active": True, "created_at": datetime.utcnow().isoformat()}
+    loc = {"id": str(uuid.uuid4()), "name": body.name, "building": body.building or "", "floor": body.floor or "", "active": True, "created_at": datetime.utcnow().isoformat() + "Z"}
     locations.append(loc)
     return loc
 
