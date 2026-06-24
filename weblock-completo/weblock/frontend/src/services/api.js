@@ -31,7 +31,7 @@ export const usersAPI = {
   get:    (id)     => api.get(`/users/${id}`),
   create: (data)   => api.post('/users', data),
   update: (id, data) => api.put(`/users/${id}`, data),
-  delete: (id)     => api.delete(`/users/${id}`),
+  delete: (id, permanent = false) => api.delete(`/users/${id}`, { params: { permanent } }),
 };
 
 // Logs

@@ -11,12 +11,21 @@ class TokenResponse(BaseModel):
     user: dict
 
 # ── Users ─────────────────────────────────────────────────────────────────────
+from pydantic import BaseModel, EmailStr, field_validator
+
 class UserCreate(BaseModel):
     name: str
     email: str
     password: str
     role: str
     matricula: Optional[str] = None
+
+    @field_validator("name", "email", "password", "role")
+    @classmethod
+    def not_empty(cls, v):
+        if not v or not v.strip():
+            raise ValueError("Campo não pode ser vazio.")
+        return v
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None
@@ -31,12 +40,14 @@ class LocationCreate(BaseModel):
     name: str
     building: Optional[str] = ""
     floor: Optional[str] = ""
+    roles: list[str] = []
 
 class LocationUpdate(BaseModel):
     name: Optional[str] = None
     building: Optional[str] = None
     floor: Optional[str] = None
     active: Optional[bool] = None
+    roles: Optional[list[str]] = None
 
 # ── Lock ──────────────────────────────────────────────────────────────────────
 class AccessRequest(BaseModel):

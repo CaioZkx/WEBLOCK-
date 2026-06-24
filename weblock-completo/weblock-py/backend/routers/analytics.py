@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, Query
 from models.database import access_logs, users, locations
-from services.auth import require_admin_or_professor
+from services.auth import get_current_user
 
 router = APIRouter(prefix="/analytics", tags=["Analytics"])
 
@@ -9,7 +9,7 @@ PERIODS = {"24h": 86400, "7d": 604800, "30d": 2592000}
 
 
 @router.get("")
-def get_analytics(period: str = Query("7d"), current_user: dict = Depends(require_admin_or_professor)):
+def get_analytics(period: str = Query("7d"), current_user: dict = Depends(get_current_user)):
     seconds = PERIODS.get(period, PERIODS["7d"])
     since = datetime.utcnow() - timedelta(seconds=seconds)
 

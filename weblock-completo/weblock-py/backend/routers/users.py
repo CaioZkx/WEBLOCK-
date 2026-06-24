@@ -76,12 +76,17 @@ def update_user(user_id: str, body: UserUpdate, current_user: dict = Depends(req
 
 
 @router.delete("/{user_id}")
-def delete_user(user_id: str, current_user: dict = Depends(require_admin)):
+def delete_user(user_id: str, permanent: bool = False, current_user: dict = Depends(require_admin)):
     if user_id == current_user["id"]:
         raise HTTPException(status_code=400, detail="Não é possível remover seu próprio usuário.")
     user = next((u for u in users if u["id"] == user_id), None)
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")
+
+    if permanent:
+        users.remove(user)
+        return {"message": "Usuário excluído permanentemente."}
+
     user["active"] = False
-    user["updated_at"] = datetime.utcnow().isoformat() + "Z"
+    user["updated_at"] = datetime.utcnow().isoformat() 
     return {"message": "Usuário desativado com sucesso."}

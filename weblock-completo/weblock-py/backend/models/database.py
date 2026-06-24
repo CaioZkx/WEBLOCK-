@@ -20,6 +20,7 @@ access_permissions: dict[str, list[str]] = {
     "loc-003": ["admin", "professor", "aluno", "terceirizado"],
     "loc-004": ["admin", "professor", "aluno", "terceirizado"],
     "loc-005": ["admin", "professor"],
+
 }
 
 

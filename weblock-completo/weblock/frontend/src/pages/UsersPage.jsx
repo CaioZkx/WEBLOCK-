@@ -40,11 +40,10 @@ export default function UsersPage() {
     setSaving(false);
   };
 
-  const deactivate = async id => {
-    if (!confirm('Desativar este usuário?')) return;
-    await usersAPI.delete(id); fetchUsers();
-  };
-
+const deactivate = async id => {
+  if (!confirm('Excluir permanentemente este usuário? Essa ação não pode ser desfeita.')) return;
+  await usersAPI.delete(id, true); fetchUsers();
+};
   return (
     <div style={S.page}>
       <div style={S.header}>
