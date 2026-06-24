@@ -11,6 +11,13 @@ router = APIRouter(prefix="/lock", tags=["Lock"])
 def request_access(body: AccessRequest):
     start = datetime.utcnow()
 
+    if not body.userId:
+        log = _build_log(None, "Não identificado", None, body.locationId,
+                         _get_location_name(body.locationId), "negado",
+                         f"Cartão não cadastrado (ID lido: {body.cardId})", body.deviceIp)
+        access_logs.insert(0, log)
+        return {"allowed": False, "reason": "Cartão/usuário não cadastrado no sistema.", "response_time_ms": _ms(start)}
+
     user = next((u for u in users if u["id"] == body.userId and u["active"]), None)
     if not user:
         log = _build_log(body.userId, "Desconhecido", None, body.locationId, "Desconhecido", "negado", "Usuário não encontrado", body.deviceIp)
@@ -43,7 +50,7 @@ def request_access(body: AccessRequest):
 
 @router.post("/event")
 def lock_event(body: LockEvent):
-    print(f"[LOCK EVENT] {body.eventType} @ {body.locationId} | {body.description}")
+    print(f"[LOCK EVENT] {body.eventType} @ {body.locationId}    | {body.description}")
     return {"received": True, "timestamp": datetime.utcnow().isoformat() + "Z"}
 
 
@@ -56,6 +63,9 @@ def _build_log(user_id, user_name, user_role, location_id, location_name, result
         "timestamp": datetime.utcnow().isoformat() + "Z",
         "device_ip": device_ip,
     }
+def _get_location_name(location_id: str) -> str:
+    loc = next((l for l in locations if l["id"] == location_id), None)
+    return loc["name"] if loc else "Local desconhecido"
 
 def _ms(start: datetime) -> int:
     return int((datetime.utcnow() - start).total_seconds() * 1000)

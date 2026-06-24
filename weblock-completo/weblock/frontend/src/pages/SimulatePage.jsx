@@ -15,17 +15,18 @@ export default function SimulatePage() {
     usersAPI.list({ active: true }).then(r => setUsers(r.data.users));
     locationsAPI.list().then(r => setLocations(r.data));
   }, []);
-
-  const simulate = async () => {
-    if (!userId || !locationId) return;
-    setLoading(true);
-    try {
-      const { data } = await lockAPI.requestAccess(userId, locationId);
-      setResult(data);
-      setHistory(h => [{ ...data, ts: new Date().toLocaleTimeString('pt-BR'), userId, locationId }, ...h].slice(0, 20));
-    } catch (e) { console.error(e); }
-    setLoading(false);
-  };
+const simulate = async () => {
+  if (!userId || !locationId) return;
+  setLoading(true);
+  try {
+    const realUserId = userId === 'UNKNOWN' ? null : userId;
+    const cardId = userId === 'UNKNOWN' ? `CARD-${Math.floor(Math.random()*99999)}` : undefined;
+    const { data } = await lockAPI.requestAccess(realUserId, locationId, cardId);
+    setResult(data);
+    setHistory(h => [{ ...data, ts: new Date().toLocaleTimeString('pt-BR'), userId, locationId }, ...h].slice(0, 20));
+  } catch (e) { console.error(e); }
+  setLoading(false);
+};
 
   const allowed = result?.allowed;
 
@@ -41,10 +42,11 @@ export default function SimulatePage() {
           <h3 style={S.cardTitle}>Parâmetros da Simulação</h3>
 
           <label style={S.label}>Usuário</label>
-          <select style={S.select} value={userId} onChange={e => setUserId(e.target.value)}>
-            <option value="">Selecione um usuário...</option>
-            {users.map(u => <option key={u.id} value={u.id}>{u.name} ({u.role})</option>)}
-          </select>
+        <select style={S.select} value={userId} onChange={e => setUserId(e.target.value)}>
+        <option value="">Selecione um usuário...</option>
+        <option value="UNKNOWN">🚫 Cartão não cadastrado (simular intruso)</option>
+        {users.map(u => <option key={u.id} value={u.id}>{u.name} ({u.role})</option>)}
+        </select>
 
           <label style={{ ...S.label, marginTop: 16 }}>Local</label>
           <select style={S.select} value={locationId} onChange={e => setLocationId(e.target.value)}>

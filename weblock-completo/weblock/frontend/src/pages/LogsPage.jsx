@@ -53,8 +53,8 @@ export default function LogsPage() {
               {logs.map((l, i) => (
                 <tr key={l.id} style={{ background: i%2===0 ? '#f8fafc' : '#fff' }}>
                   <td style={S.td}>{fmt(l.timestamp)}</td>
-                  <td style={S.td}>{l.user_name}</td>
-                  <td style={S.td}><span style={{ ...S.role, background: ROLE_COLORS[l.user_role] || '#64748b' }}>{l.user_role}</span></td>
+                  <td style={S.td}>{l.user_name || 'Não identificado'}</td>
+                  <td style={S.td}>{l.user_role ? <span style={{ ...S.role, background: ROLE_COLORS[l.user_role] || '#64748b' }}>{l.user_role}</span> : <span style={{ color: '#94a3b8', fontSize: 12 }}>—</span>}</td>
                   <td style={S.td}>{l.location_name}</td>
                   <td style={S.td}>
                     {l.result === 'permitido'

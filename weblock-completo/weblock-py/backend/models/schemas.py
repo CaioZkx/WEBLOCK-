@@ -40,7 +40,8 @@ class LocationUpdate(BaseModel):
 
 # ── Lock ──────────────────────────────────────────────────────────────────────
 class AccessRequest(BaseModel):
-    userId: str
+    userId: Optional[str] = None
+    cardId: Optional[str] = None
     locationId: str
     deviceIp: Optional[str] = None
 

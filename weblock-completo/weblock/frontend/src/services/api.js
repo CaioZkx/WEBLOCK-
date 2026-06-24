@@ -54,7 +54,7 @@ export const locationsAPI = {
 
 // Lock simulation
 export const lockAPI = {
-  requestAccess: (userId, locationId) => api.post('/lock/access', { userId, locationId, deviceIp: '192.168.1.100' }),
+  requestAccess: (userId, locationId, cardId) => api.post('/lock/access', { userId, locationId, cardId, deviceIp: '192.168.1.100' }),
 };
 
 export default api;

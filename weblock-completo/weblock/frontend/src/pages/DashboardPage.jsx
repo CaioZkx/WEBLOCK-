@@ -61,14 +61,14 @@ export default function DashboardPage() {
         </ChartCard>
 
         <ChartCard title="Acessos por Perfil">
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie data={byRole.map(r => ({ ...r, name: ROLE_LABEL[r.role] || r.role }))} dataKey="total" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, percent }) => `${name} ${(percent*100).toFixed(0)}%`}>
-                {byRole.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+            <ResponsiveContainer width="100%" height={260}>
+                <PieChart margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
+                    <Pie data={byRole.map(r => ({ ...r, name: ROLE_LABEL[r.role] || r.role }))} dataKey="total" nameKey="name" cx="50%" cy="50%" outerRadius={70} label={({ name, percent }) => `${name} ${(percent*100).toFixed(0)}%`}>
+                        {byRole.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                    </Pie>
+                <Tooltip />
+                </PieChart>
+            </ResponsiveContainer>
         </ChartCard>
       </div>
 
