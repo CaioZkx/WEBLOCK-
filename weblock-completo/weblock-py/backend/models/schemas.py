@@ -11,8 +11,6 @@ class TokenResponse(BaseModel):
     user: dict
 
 # ── Users ─────────────────────────────────────────────────────────────────────
-from pydantic import BaseModel, EmailStr, field_validator
-
 class UserCreate(BaseModel):
     name: str
     email: str

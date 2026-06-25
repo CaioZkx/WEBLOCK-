@@ -1,5 +1,5 @@
 """Testes de CRUD de usuários — inclui os bugs corrigidos durante o desenvolvimento."""
-import pytest
+
 
 # ── Permissões de acesso ──────────────────────────────────────────────────────
 

@@ -1,50 +1,62 @@
 """
 Fixtures compartilhadas para os testes do WebLock.
 
-IMPORTANTE: o "banco de dados" é formado por listas Python em memória
-(models/database.py). Como os testes rodam no mesmo processo, é preciso
-limpar e re-popular essas listas antes de CADA teste — senão um teste
-contamina o próximo (ex: um usuário criado em test_users.py apareceria
-em test_logs.py).
+Agora os testes rodam contra um banco SQLite separado (arquivo test.db),
+NUNCA contra o Supabase de produção. Cada teste começa com o banco
+limpo e repovoado (seed), igual fazíamos antes com as listas em memória.
 """
 import sys
 import os
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
-# Garante que o pacote backend é importável quando o pytest roda da raiz do projeto
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from main import app
-from models import database as db
+# Usa SQLite em arquivo só para os testes — não toca no Postgres de produção
+TEST_DATABASE_URL = "sqlite:///./test.db"
+os.environ["DATABASE_URL"] = TEST_DATABASE_URL
+
+from database_config import Base, get_db
+from models import orm_models
+from models.seed import seed
+import main as main_module
+
+test_engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
+TestSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
+
+
+def _override_get_db():
+    db = TestSessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+main_module.app.dependency_overrides[get_db] = _override_get_db
 
 
 @pytest.fixture(autouse=True)
 def reset_database():
-    """Limpa e repovoa o banco em memória antes de cada teste."""
-    db.users.clear()
-    db.locations.clear()
-    db.access_logs.clear()
-    db.access_permissions.clear()
-    db.access_permissions.update({
-        "loc-001": ["admin", "professor", "aluno"],
-        "loc-002": ["admin", "professor", "aluno"],
-        "loc-003": ["admin", "professor", "aluno", "terceirizado"],
-        "loc-004": ["admin", "professor", "aluno", "terceirizado"],
-        "loc-005": ["admin", "professor"],
-    })
-    db.seed()
+    Base.metadata.drop_all(bind=test_engine)
+    Base.metadata.create_all(bind=test_engine)
+    db = TestSessionLocal()
+    try:
+        seed(db)
+    finally:
+        db.close()
     yield
 
 
 @pytest.fixture
 def client():
-    return TestClient(app)
+    return TestClient(main_module.app)
 
 
 @pytest.fixture
 def auth_headers(client):
-    """Retorna uma função que faz login e devolve os headers Authorization prontos."""
     def _get(email: str, password: str) -> dict:
         resp = client.post("/api/auth/login", json={"email": email, "password": password})
         assert resp.status_code == 200, resp.text

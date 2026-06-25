@@ -5,7 +5,7 @@ import { Plus, Edit2, Trash2, Search } from 'lucide-react';
 
 const ROLES = ['admin','professor','aluno','terceirizado'];
 const ROLE_COLORS = { admin:'#7c3aed', professor:'#1d4ed8', aluno:'#059669', terceirizado:'#d97706' };
-const empty = { name:'', email:'', password:'', role:'aluno', matricula:'' };
+const empty = { name:'', email:'', password:'', role:'aluno', matricula:'', active: true };
 
 export default function UsersPage() {
   const { isAdmin } = useAuth();
@@ -98,6 +98,15 @@ const deactivate = async id => {
                 {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
             </div>
+            {modal !== 'create' && (
+              <div style={{ marginBottom: 14 }}>
+                <label style={S.label}>Status</label>
+                <select style={S.input} value={form.active ? 'true' : 'false'} onChange={e => setForm(f=>({...f,active:e.target.value === 'true'}))}>
+                  <option value="true">Ativo</option>
+                  <option value="false">Inativo</option>
+                </select>
+              </div>
+            )}
             {error && <p style={{ color:'#ef4444', fontSize:13, margin:'0 0 12px' }}>{error}</p>}
             <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
               <button style={S.cancelBtn} onClick={() => setModal(null)}>Cancelar</button>

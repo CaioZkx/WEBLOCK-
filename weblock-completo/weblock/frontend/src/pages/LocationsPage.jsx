@@ -3,7 +3,6 @@ import { locationsAPI } from '../services/api';
 import { Plus, MapPin, Edit2 } from 'lucide-react';
 
 const ROLES = [
-  { value: 'admin', label: 'Admin' },
   { value: 'professor', label: 'Professor' },
   { value: 'aluno', label: 'Aluno' },
   { value: 'terceirizado', label: 'Terceirizado' },
@@ -44,7 +43,7 @@ export default function LocationsPage() {
   };
 
   const openCreate = () => { setForm(emptyForm); setEditId(null); setError(''); setModal(true); };
-  const openEdit   = l => { setForm({ name: l.name, building: l.building, floor: l.floor, roles: l.roles || [] }); setEditId(l.id); setError(''); setModal(true); };
+  const openEdit   = l => { setForm({ name: l.name, building: l.building, floor: l.floor, roles: (l.roles || []).filter(r => r !== 'admin') }); setEditId(l.id); setError(''); setModal(true); };
 
   return (
     <div style={S.page}>
@@ -63,9 +62,10 @@ export default function LocationsPage() {
             <h3 style={S.locName}>{l.name}</h3>
             <p style={S.locSub}>{l.building} • {l.floor}º andar</p>
             <div style={S.rolesWrap}>
-              {(l.roles && l.roles.length > 0) ? l.roles.map(r => (
+              <span style={S.adminTag}>Admin</span>
+              {(l.roles || []).filter(r => r !== 'admin').map(r => (
                 <span key={r} style={S.roleTag}>{ROLES.find(x => x.value === r)?.label || r}</span>
-              )) : <span style={{ fontSize: 12, color: '#ef4444' }}>Sem permissões definidas</span>}
+              ))}
             </div>
           </div>
         ))}
@@ -86,6 +86,7 @@ export default function LocationsPage() {
             <input style={S.input} value={form.floor} onChange={e => setForm(f=>({...f,floor:e.target.value}))}/>
 
             <label style={{ ...S.label, marginTop: 14 }}>Quem pode acessar?</label>
+            <p style={{ fontSize: 12, color: '#94a3b8', margin: '0 0 8px' }}>O administrador sempre tem acesso a todos os locais.</p>
             <div style={S.checkboxGrid}>
               {ROLES.map(r => (
                 <label key={r.value} style={S.checkboxLabel}>
@@ -123,6 +124,7 @@ const S = {
   locSub:     { margin: '0 0 10px', fontSize: 13, color: '#64748b' },
   rolesWrap:  { display: 'flex', flexWrap: 'wrap', gap: 6 },
   roleTag:    { fontSize: 11, fontWeight: 600, background: '#eff6ff', color: '#1d4ed8', padding: '2px 8px', borderRadius: 10 },
+  adminTag:   { fontSize: 11, fontWeight: 600, background: '#f5f3ff', color: '#7c3aed', padding: '2px 8px', borderRadius: 10 },
   overlay:    { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 },
   modal:      { background: '#fff', borderRadius: 16, padding: 32, width: 420, boxShadow: '0 20px 60px rgba(0,0,0,0.3)' },
   label:      { display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 5 },

@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from models.database import seed
+from database_config import engine, Base, SessionLocal
+from models import orm_models  # garante que as tabelas são registradas no Base
+from models.seed import seed
 from routers import auth, users, lock, logs, analytics, locations
 
 app = FastAPI(
@@ -17,7 +19,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Routers
 app.include_router(auth.router,      prefix="/api")
 app.include_router(users.router,     prefix="/api")
 app.include_router(lock.router,      prefix="/api")
@@ -33,7 +34,12 @@ def health():
 
 @app.on_event("startup")
 def startup():
-    seed()
-    print("\n🔒 WebLock API (FastAPI) rodando!")
+    Base.metadata.create_all(bind=engine)  # cria as tabelas se não existirem
+    db = SessionLocal()
+    try:
+        seed(db)
+    finally:
+        db.close()
+    print("\n🔒 WebLock API (FastAPI + PostgreSQL) rodando!")
     print("   Docs: http://localhost:8000/docs")
     print("   Credenciais: admin@weblock.ufc.br / admin123\n")

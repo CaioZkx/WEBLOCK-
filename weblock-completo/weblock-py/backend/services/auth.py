@@ -4,8 +4,10 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from sqlalchemy.orm import Session
 from dotenv import load_dotenv
-from models.database import users
+from database_config import get_db
+from models.orm_models import User
 
 load_dotenv()
 
@@ -31,7 +33,10 @@ def create_token(data: dict) -> str:
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(bearer)):
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(bearer),
+    db: Session = Depends(get_db),
+) -> User:
     token = credentials.credentials
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -41,23 +46,28 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(bearer)
     except JWTError:
         raise HTTPException(status_code=401, detail="Token inválido ou expirado.")
 
-    user = next((u for u in users if u["id"] == user_id and u["active"]), None)
+    user = db.query(User).filter(User.id == user_id, User.active == True).first()
     if not user:
         raise HTTPException(status_code=401, detail="Usuário inativo ou não encontrado.")
     return user
 
 
-def require_admin(current_user: dict = Depends(get_current_user)):
-    if current_user["role"] != "admin":
+def require_admin(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Acesso restrito a administradores.")
     return current_user
 
 
-def require_admin_or_professor(current_user: dict = Depends(get_current_user)):
-    if current_user["role"] not in ("admin", "professor"):
+def require_admin_or_professor(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role not in ("admin", "professor"):
         raise HTTPException(status_code=403, detail="Acesso negado.")
     return current_user
 
 
-def safe_user(user: dict) -> dict:
-    return {k: v for k, v in user.items() if k != "password"}
+def safe_user(user: User) -> dict:
+    return {
+        "id": user.id, "name": user.name, "email": user.email, "role": user.role,
+        "matricula": user.matricula, "active": user.active,
+        "created_at": user.created_at.isoformat() if user.created_at else None,
+        "updated_at": user.updated_at.isoformat() if user.updated_at else None,
+    }
