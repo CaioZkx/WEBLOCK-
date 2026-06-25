@@ -36,6 +36,12 @@ def get_user(user_id: str, current_user: dict = Depends(get_current_user)):
 
 @router.post("", status_code=201)
 def create_user(body: UserCreate, current_user: dict = Depends(require_admin)):
+    if not body.name or not body.name.strip():
+        raise HTTPException(status_code=400, detail="Nome é obrigatório.")
+    if not body.email or not body.email.strip():
+        raise HTTPException(status_code=400, detail="Email é obrigatório.")
+    if not body.password or not body.password.strip():
+        raise HTTPException(status_code=400, detail="Senha é obrigatória.")
     if body.role not in VALID_ROLES:
         raise HTTPException(status_code=400, detail=f"Role inválida. Use: {', '.join(VALID_ROLES)}")
     if any(u["email"] == body.email.lower().strip() for u in users):
@@ -43,14 +49,14 @@ def create_user(body: UserCreate, current_user: dict = Depends(require_admin)):
 
     new_user = {
         "id": str(uuid.uuid4()),
-        "name": body.name,
+        "name": body.name.strip(),
         "email": body.email.lower().strip(),
         "password": hash_password(body.password),
         "role": body.role,
         "matricula": body.matricula,
         "active": True,
-        "created_at": datetime.utcnow().isoformat() + "Z",
-        "updated_at": datetime.utcnow().isoformat() + "Z",
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat(),
     }
     users.append(new_user)
     return safe_user(new_user)

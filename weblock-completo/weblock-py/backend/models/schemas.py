@@ -20,13 +20,6 @@ class UserCreate(BaseModel):
     role: str
     matricula: Optional[str] = None
 
-    @field_validator("name", "email", "password", "role")
-    @classmethod
-    def not_empty(cls, v):
-        if not v or not v.strip():
-            raise ValueError("Campo não pode ser vazio.")
-        return v
-
 class UserUpdate(BaseModel):
     name: Optional[str] = None
     email: Optional[str] = None
