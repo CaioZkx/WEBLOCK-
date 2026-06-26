@@ -1,4 +1,4 @@
-# 🔒 WebLock — Backend Python + FastAPI
+# 🔒 WebLock
 
 ## 📁 Estrutura do Projeto
 
