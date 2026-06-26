@@ -1,3 +1,4 @@
+from distro import name
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from models.schemas import LocationCreate, LocationUpdate
@@ -31,12 +32,24 @@ def create_location(body: LocationCreate, db: Session = Depends(get_db), current
     if not body.name or not body.name.strip():
         raise HTTPException(status_code=400, detail="Nome do local é obrigatório.")
 
+    name = body.name.strip()
+    building = (body.building or "").strip()
+    floor = (body.floor or "").strip()
+
+    duplicado = db.query(Location).filter(
+        Location.name == name,
+        Location.building == building,
+        Location.floor == floor,
+        Location.active == True,
+    ).first()
+    if duplicado:
+        raise HTTPException(status_code=409, detail="Já existe um local com esse nome, bloco e andar.")
+
     invalid = [r for r in body.roles if r not in VALID_ROLES]
     if invalid:
         raise HTTPException(status_code=400, detail=f"Perfis inválidos: {', '.join(invalid)}")
 
-    loc = Location(name=body.name.strip(), building=(body.building or "").strip(), floor=(body.floor or "").strip(), active=True)
-    db.add(loc)
+    loc = Location(name=name, building=building, floor=floor, active=True)
     db.flush()  # garante loc.id antes de criar as permissões
 
     for role in body.roles:

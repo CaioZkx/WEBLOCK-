@@ -60,7 +60,11 @@ export default function LocationsPage() {
               <button style={S.editBtn} onClick={() => openEdit(l)}><Edit2 size={13}/></button>
             </div>
             <h3 style={S.locName}>{l.name}</h3>
-            <p style={S.locSub}>{l.building} • {l.floor}º andar</p>
+            {(l.building || l.floor) && (
+              <p style={S.locSub}>
+                {l.building}{l.building && l.floor ? ' • ' : ''}{l.floor ? `${l.floor}º andar` : ''}
+              </p>
+            )}
             <div style={S.rolesWrap}>
               <span style={S.adminTag}>Admin</span>
               {(l.roles || []).filter(r => r !== 'admin').map(r => (
