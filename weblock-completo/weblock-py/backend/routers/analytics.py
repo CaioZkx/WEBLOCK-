@@ -45,7 +45,8 @@ def get_analytics(period: str = Query("7d"), db: Session = Depends(get_db), curr
 
     by_day: dict = {}
     for l in filtered:
-        day = l.timestamp.strftime("%Y-%m-%d")
+        dt_local = l.timestamp - timedelta(hours=3)  # UTC -> horário de Brasília
+        day = dt_local.strftime("%Y-%m-%d")
         if day not in by_day:
             by_day[day] = {"date": day, "total": 0, "permitidos": 0, "negados": 0}
         by_day[day]["total"] += 1
