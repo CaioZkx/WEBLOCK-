@@ -1,6 +1,7 @@
 """Testes de CRUD de usuários — inclui os bugs corrigidos durante o desenvolvimento."""
 #OBS.: Testes unitários foram adicionados por Breno neste código. Eles estão indicados mais abaixo com comentários.
 #      Eles iniciam a partir da linha 202.
+#      Testes Unitários feitos por Francisco Breno Gomes Melo 
 
 # ── Permissões de acesso ──────────────────────────────────────────────────────
 
