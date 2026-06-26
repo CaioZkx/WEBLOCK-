@@ -1,10 +1,6 @@
 """Testes de CRUD de usuários — inclui os bugs corrigidos durante o desenvolvimento."""
-#OBS.: Testes unitários foram adicionados por Breno neste código. Eles estão indicados mais abaixo com comentários.
-#      Testes Unitários feitos por Francisco Breno Gomes Melo 
-
-#===============================================================================
-# Teste Feitos Francisco Breno Gomes Melo - Lista 3 (Engenharia de Software)
-#===============================================================================
+#OBS.: Testes unitários foram adicionados por Francisco Breno Gomes Melo neste código.
+#      A partir da Linha 208.
 
 # ── Permissões de acesso ──────────────────────────────────────────────────────
 
@@ -203,3 +199,146 @@ def test_buscar_usuario_por_nome(client, admin_headers):
     body = resp.json()
     assert any("Maria" in u["name"] for u in body["users"])
 
+
+
+# =============================================================================
+# Testes Unitários  - Lista 3 (Engenharia de Software)
+# =============================================================================
+
+def test_criar_usuario_com_email_invalido(client, admin_headers):
+    """Verifica que o sistema rejeita um e-mail em formato inválido."""
+
+    resp = client.post("/api/users", json={
+        "name": "Email Invalido",
+        "email": "emailinvalido",
+        "password": "123456",
+        "role": "aluno"
+    }, headers=admin_headers)
+
+    assert resp.status_code == 400
+
+
+def test_criar_usuario_sem_role(client, admin_headers):
+    """Verifica que o campo role é obrigatório."""
+
+    resp = client.post("/api/users", json={
+        "name": "Sem Role",
+        "email": "semrole@ufc.br",
+        "password": "123456"
+    }, headers=admin_headers)
+
+    assert resp.status_code == 400
+
+
+def test_criar_usuario_sem_senha(client, admin_headers):
+    """Verifica que o campo password é obrigatório."""
+
+    resp = client.post("/api/users", json={
+        "name": "Sem Senha",
+        "email": "semsenha@ufc.br",
+        "role": "aluno"
+    }, headers=admin_headers)
+
+    assert resp.status_code == 400
+
+
+def test_admin_pode_buscar_usuario_por_id(client, admin_headers):
+    """Verifica que um usuário recém-criado pode ser consultado pelo ID."""
+
+    create = client.post("/api/users", json={
+        "name": "Buscar ID",
+        "email": "buscarid@ufc.br",
+        "password": "123456",
+        "role": "aluno"
+    }, headers=admin_headers).json()
+
+    resp = client.get(f"/api/users/{create['id']}", headers=admin_headers)
+
+    assert resp.status_code == 200
+    assert resp.json()["id"] == create["id"]
+
+
+def test_busca_usuario_inexistente_retorna_404(client, admin_headers):
+    """Verifica a resposta para um ID inexistente."""
+
+    resp = client.get("/api/users/id-inexistente", headers=admin_headers)
+
+    assert resp.status_code == 404
+
+
+def test_atualizar_email_usuario(client, admin_headers):
+    """Verifica se é possível atualizar apenas o e-mail do usuário."""
+
+    create = client.post("/api/users", json={
+        "name": "Atualizar Email",
+        "email": "email.antigo@ufc.br",
+        "password": "123456",
+        "role": "aluno"
+    }, headers=admin_headers).json()
+
+    resp = client.put(
+        f"/api/users/{create['id']}",
+        json={"email": "email.novo@ufc.br"},
+        headers=admin_headers
+    )
+
+    assert resp.status_code == 200
+    assert resp.json()["email"] == "email.novo@ufc.br"
+
+
+def test_usuario_desativado_continua_existindo(client, admin_headers):
+    """Verifica que um usuário desativado continua podendo ser consultado."""
+
+    create = client.post("/api/users", json={
+        "name": "Usuario Desativado",
+        "email": "desativado2@ufc.br",
+        "password": "123456",
+        "role": "aluno"
+    }, headers=admin_headers).json()
+
+    client.delete(f"/api/users/{create['id']}", headers=admin_headers)
+
+    resp = client.get(f"/api/users/{create['id']}", headers=admin_headers)
+
+    assert resp.status_code == 200
+    assert resp.json()["active"] is False
+
+
+def test_listagem_retorna_lista_de_usuarios(client, admin_headers):
+    """Verifica que o retorno da listagem possui uma lista de usuários."""
+
+    resp = client.get("/api/users", headers=admin_headers)
+
+    body = resp.json()
+
+    assert isinstance(body["users"], list)
+
+
+def test_usuario_criado_possui_id(client, admin_headers):
+    """Verifica que todo usuário criado recebe um identificador."""
+
+    resp = client.post("/api/users", json={
+        "name": "Com ID",
+        "email": "comid@ufc.br",
+        "password": "123456",
+        "role": "aluno"
+    }, headers=admin_headers)
+
+    body = resp.json()
+
+    assert "id" in body
+
+
+def test_password_nao_e_retorno_na_busca_por_id(client, admin_headers):
+    """Verifica que a senha nunca é retornada pela API."""
+
+    create = client.post("/api/users", json={
+        "name": "Sem Password",
+        "email": "sempassword@ufc.br",
+        "password": "123456",
+        "role": "aluno"
+    }, headers=admin_headers).json()
+
+    resp = client.get(f"/api/users/{create['id']}", headers=admin_headers)
+
+    assert "password" not in resp.json()
