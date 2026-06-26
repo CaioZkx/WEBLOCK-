@@ -51,8 +51,8 @@ def create_user(body: UserCreate, db: Session = Depends(get_db), current_user: U
         raise HTTPException(status_code=400, detail="Email inválido. Deve conter '@'.")
     if not body.password or not body.password.strip():
         raise HTTPException(status_code=400, detail="Senha é obrigatória.")
-    if not body.matricula or not body.matricula.strip():
-        raise HTTPException(status_code=400, detail="Matrícula é obrigatória.")
+    if body.matricula is not None and not body.matricula.strip():
+        raise HTTPException(status_code=400, detail="Matrícula não pode ser vazia.")
     if body.role not in VALID_ROLES:
         raise HTTPException(status_code=400, detail=f"Role inválida. Use: {', '.join(VALID_ROLES)}")
 
@@ -65,7 +65,7 @@ def create_user(body: UserCreate, db: Session = Depends(get_db), current_user: U
         email=email,
         password=hash_password(body.password),
         role=body.role,
-        matricula=body.matricula,
+        matricula=body.matricula.strip() if body.matricula else None,
         active=True,
     )
     db.add(new_user)
