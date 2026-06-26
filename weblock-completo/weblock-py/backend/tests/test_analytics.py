@@ -1,4 +1,4 @@
-"Testes realizados por Caio para a lista 3"
+"""Testes realizados por Caio Silvano Muniz dos Santos para a lista 3"""
 
 
 # ── Períodos válidos ──────────────────────────────────────────────────────────
