@@ -1,4 +1,3 @@
-from distro import name
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from models.schemas import LocationCreate, LocationUpdate
@@ -50,6 +49,7 @@ def create_location(body: LocationCreate, db: Session = Depends(get_db), current
         raise HTTPException(status_code=400, detail=f"Perfis inválidos: {', '.join(invalid)}")
 
     loc = Location(name=name, building=building, floor=floor, active=True)
+    db.add(loc)
     db.flush()  # garante loc.id antes de criar as permissões
 
     for role in body.roles:
@@ -85,3 +85,19 @@ def update_location(loc_id: str, body: LocationUpdate, db: Session = Depends(get
     db.commit()
     db.refresh(loc)
     return _with_roles(loc, db)
+
+@router.delete("/{loc_id}")
+def delete_location(loc_id: str, permanent: bool = False, db: Session = Depends(get_db), current_user: User = Depends(require_admin)):
+    loc = db.query(Location).filter(Location.id == loc_id).first()
+    if not loc:
+        raise HTTPException(status_code=404, detail="Local não encontrado.")
+
+    if permanent:
+        db.query(AccessPermission).filter(AccessPermission.location_id == loc_id).delete()
+        db.delete(loc)
+        db.commit()
+        return {"message": "Local excluído permanentemente."}
+
+    loc.active = False
+    db.commit()
+    return {"message": "Local desativado com sucesso."}

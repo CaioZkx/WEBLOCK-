@@ -50,6 +50,7 @@ export const locationsAPI = {
   list:   ()          => api.get('/locations'),
   create: (data)      => api.post('/locations', data),
   update: (id, data)  => api.put(`/locations/${id}`, data),
+  delete: (id, permanent = false) => api.delete(`/locations/${id}`, { params: { permanent } }),
 };
 
 // Lock simulation

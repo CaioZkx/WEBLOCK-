@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { locationsAPI } from '../services/api';
-import { Plus, MapPin, Edit2 } from 'lucide-react';
+import { Plus, MapPin, Edit2, Trash2 } from 'lucide-react';
 
 const ROLES = [
   { value: 'professor', label: 'Professor' },
@@ -45,6 +45,17 @@ export default function LocationsPage() {
   const openCreate = () => { setForm(emptyForm); setEditId(null); setError(''); setModal(true); };
   const openEdit   = l => { setForm({ name: l.name, building: l.building, floor: l.floor, roles: (l.roles || []).filter(r => r !== 'admin') }); setEditId(l.id); setError(''); setModal(true); };
 
+  const removeLocation = async id => {
+    if (!confirm('Excluir permanentemente este local? Essa ação não pode ser desfeita.')) return;
+    try {
+      await locationsAPI.delete(id, true);
+      fetchLocations();
+    } catch (e) {
+      alert(e.response?.data?.detail || 'Erro ao excluir local.');
+      console.error(e);
+    }
+  };
+
   return (
     <div style={S.page}>
       <div style={S.header}>
@@ -57,7 +68,10 @@ export default function LocationsPage() {
           <div key={l.id} style={S.card}>
             <div style={S.cardHead}>
               <div style={S.iconBox}><MapPin size={20} color="#3b82f6"/></div>
-              <button style={S.editBtn} onClick={() => openEdit(l)}><Edit2 size={13}/></button>
+              <div style={{ display: 'flex', gap: 4 }}>
+                <button style={S.editBtn} onClick={() => openEdit(l)}><Edit2 size={13}/></button>
+                <button style={{ ...S.editBtn, color: '#ef4444' }} onClick={() => removeLocation(l.id)}><Trash2 size={13}/></button>
+              </div>
             </div>
             <h3 style={S.locName}>{l.name}</h3>
             {(l.building || l.floor) && (
