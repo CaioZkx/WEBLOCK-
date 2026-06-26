@@ -200,7 +200,7 @@ def test_buscar_usuario_por_nome(client, admin_headers):
     assert any("Maria" in u["name"] for u in body["users"])
 
 
-# =============================================================================
+# ============================================================================
 # Testes adicionados por Breno - Lista 3 (Engenharia de Software)
 # =============================================================================
 
