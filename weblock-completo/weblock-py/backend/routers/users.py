@@ -47,8 +47,12 @@ def create_user(body: UserCreate, db: Session = Depends(get_db), current_user: U
         raise HTTPException(status_code=400, detail="Nome é obrigatório.")
     if not body.email or not body.email.strip():
         raise HTTPException(status_code=400, detail="Email é obrigatório.")
+    if "@" not in body.email.strip():
+        raise HTTPException(status_code=400, detail="Email inválido. Deve conter '@'.")
     if not body.password or not body.password.strip():
         raise HTTPException(status_code=400, detail="Senha é obrigatória.")
+    if not body.matricula or not body.matricula.strip():
+        raise HTTPException(status_code=400, detail="Matrícula é obrigatória.")
     if body.role not in VALID_ROLES:
         raise HTTPException(status_code=400, detail=f"Role inválida. Use: {', '.join(VALID_ROLES)}")
 
@@ -76,11 +80,18 @@ def update_user(user_id: str, body: UserUpdate, db: Session = Depends(get_db), c
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")
 
-    if body.email and body.email.lower().strip() != user.email:
+    if body.email is not None:
+        if not body.email.strip():
+            raise HTTPException(status_code=400, detail="Email não pode ser vazio.")
+        if "@" not in body.email.strip():
+            raise HTTPException(status_code=400, detail="Email inválido. Deve conter '@'.")
         new_email = body.email.lower().strip()
-        if db.query(User).filter(User.email == new_email, User.id != user_id).first():
+        if new_email != user.email and db.query(User).filter(User.email == new_email, User.id != user_id).first():
             raise HTTPException(status_code=409, detail="Email já em uso.")
         user.email = new_email
+
+    if body.matricula is not None and not body.matricula.strip():
+        raise HTTPException(status_code=400, detail="Matrícula não pode ser vazia.")
 
     if body.name:     user.name = body.name.strip()
     if body.role:     user.role = body.role
