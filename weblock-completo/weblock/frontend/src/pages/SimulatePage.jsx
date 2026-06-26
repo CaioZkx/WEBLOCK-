@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { lockAPI, usersAPI, locationsAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { Lock, Unlock, Zap } from 'lucide-react';
 
 export default function SimulatePage() {
+  const { user: currentUser, isAdminOrProf } = useAuth();
   const [users, setUsers]         = useState([]);
   const [locations, setLocations] = useState([]);
   const [userId, setUserId]       = useState('');
@@ -12,7 +14,13 @@ export default function SimulatePage() {
   const [history, setHistory]     = useState([]);
 
   useEffect(() => {
-    usersAPI.list({ active: true }).then(r => setUsers(r.data.users));
+    if (isAdminOrProf) {
+      usersAPI.list({ active: true }).then(r => setUsers(r.data.users));
+    } else {
+      // Aluno/terceirizado só podem simular o próprio acesso
+      setUsers([currentUser]);
+      setUserId(currentUser.id);
+    }
     locationsAPI.list().then(r => setLocations(r.data));
   }, []);
 const simulate = async () => {
@@ -41,12 +49,18 @@ const simulate = async () => {
         <div style={S.card}>
           <h3 style={S.cardTitle}>Parâmetros da Simulação</h3>
 
-          <label style={S.label}>Usuário</label>
-        <select style={S.select} value={userId} onChange={e => setUserId(e.target.value)}>
-        <option value="">Selecione um usuário...</option>
-        <option value="UNKNOWN">🚫 Cartão não cadastrado (simular intruso)</option>
-        {users.map(u => <option key={u.id} value={u.id}>{u.name} ({u.role})</option>)}
-        </select>
+            <label style={S.label}>Usuário</label>
+          {isAdminOrProf ? (
+            <select style={S.select} value={userId} onChange={e => setUserId(e.target.value)}>
+              <option value="">Selecione um usuário...</option>
+              <option value="UNKNOWN">🚫 Cartão não cadastrado (simular intruso)</option>
+              {users.map(u => <option key={u.id} value={u.id}>{u.name} ({u.role})</option>)}
+            </select>
+          ) : (
+            <select style={S.select} value={userId} disabled>
+              <option value={currentUser.id}>{currentUser.name} ({currentUser.role}) — você</option>
+            </select>
+          )}
 
           <label style={{ ...S.label, marginTop: 16 }}>Local</label>
           <select style={S.select} value={locationId} onChange={e => setLocationId(e.target.value)}>
