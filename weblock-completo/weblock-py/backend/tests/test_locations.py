@@ -1,5 +1,12 @@
 """Testes de CRUD de locais — inclui os bugs de validação e permissões."""
+"""Testes realizados por Geovana Rodrigues da Pascoa Souza para a lista 3"""
 
+def test_aluno_pode_ver_locais_mas_nao_criar(client, aluno_headers):
+    resp = client.get("/api/locations", headers=aluno_headers)
+    assert resp.status_code == 200
+
+    resp2 = client.post("/api/locations", json={"name": "Sala X", "roles": ["aluno"]}, headers=aluno_headers)
+    assert resp2.status_code == 403
 
 def test_listar_locais_inclui_roles(client, admin_headers):
     resp = client.get("/api/locations", headers=admin_headers)
@@ -9,31 +16,19 @@ def test_listar_locais_inclui_roles(client, admin_headers):
     sala_professores = next(l for l in locs if l["name"] == "Sala dos Professores")
     assert sala_professores["roles"] == ["admin", "professor"]
 
-
-def test_aluno_pode_ver_locais_mas_nao_criar(client, aluno_headers):
-    resp = client.get("/api/locations", headers=aluno_headers)
-    assert resp.status_code == 200
-
-    resp2 = client.post("/api/locations", json={"name": "Sala X", "roles": ["aluno"]}, headers=aluno_headers)
-    assert resp2.status_code == 403
-
-
 # ── BUG: criar local com campos vazios ────────────────────────────────────────
-
-def test_criar_local_com_nome_vazio_falha(client, admin_headers):
-    resp = client.post("/api/locations", json={"name": "", "roles": ["admin"]}, headers=admin_headers)
-    assert resp.status_code == 400
-
 
 def test_criar_local_com_nome_so_espacos_falha(client, admin_headers):
     resp = client.post("/api/locations", json={"name": "   ", "roles": ["admin"]}, headers=admin_headers)
     assert resp.status_code == 400
 
+def test_criar_local_com_nome_vazio_falha(client, admin_headers):
+    resp = client.post("/api/locations", json={"name": "", "roles": ["admin"]}, headers=admin_headers)
+    assert resp.status_code == 400
 
 def test_criar_local_sem_campo_name_falha(client, admin_headers):
     resp = client.post("/api/locations", json={"building": "Bloco D"}, headers=admin_headers)
     assert resp.status_code == 422  # erro de validação do Pydantic (campo obrigatório ausente)
-
 
 # ── BUG: permissões de acesso (roles) por local ───────────────────────────────
 
