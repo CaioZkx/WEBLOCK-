@@ -1,5 +1,5 @@
 """Testes do motor de decisão de acesso (fechadura) — POST /api/lock/access"""
-
+"""Testes realizados por Carlos André Monteiro do Amaral Filho para a lista 3"""
 
 def _get_user_id(client, admin_headers, email):
     users = client.get("/api/users", headers=admin_headers).json()["users"]
