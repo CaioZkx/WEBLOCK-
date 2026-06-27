@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy.orm import Session
@@ -9,6 +10,7 @@ from services.auth import get_current_user, require_admin, require_admin_or_prof
 router = APIRouter(prefix="/users", tags=["Users"])
 
 VALID_ROLES = {"admin", "professor", "aluno", "terceirizado"}
+EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
 @router.get("")
@@ -47,8 +49,8 @@ def create_user(body: UserCreate, db: Session = Depends(get_db), current_user: U
         raise HTTPException(status_code=400, detail="Nome é obrigatório.")
     if not body.email or not body.email.strip():
         raise HTTPException(status_code=400, detail="Email é obrigatório.")
-    if "@" not in body.email.strip():
-        raise HTTPException(status_code=400, detail="Email inválido. Deve conter '@'.")
+    if not EMAIL_REGEX.match(body.email.strip()):
+        raise HTTPException(status_code=400, detail="Email inválido. Formato esperado: nome@dominio.com")
     if not body.password or not body.password.strip():
         raise HTTPException(status_code=400, detail="Senha é obrigatória.")
     if not body.matricula or not body.matricula.strip():
@@ -83,8 +85,8 @@ def update_user(user_id: str, body: UserUpdate, db: Session = Depends(get_db), c
     if body.email is not None:
         if not body.email.strip():
             raise HTTPException(status_code=400, detail="Email não pode ser vazio.")
-        if "@" not in body.email.strip():
-            raise HTTPException(status_code=400, detail="Email inválido. Deve conter '@'.")
+        if not EMAIL_REGEX.match(body.email.strip()):
+            raise HTTPException(status_code=400, detail="Email inválido. Formato esperado: nome@dominio.com")
         new_email = body.email.lower().strip()
         if new_email != user.email and db.query(User).filter(User.email == new_email, User.id != user_id).first():
             raise HTTPException(status_code=409, detail="Email já em uso.")
