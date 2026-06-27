@@ -156,9 +156,9 @@ server: { port: 3000, proxy: { '/api': 'http://localhost:8000' } }
 
 ## 🗄 Configuração do banco de dados
 
-O projeto usa **PostgreSQL**. Duas opções:
+O projeto usa **PostgreSQL**.
 
-### Opção A — Supabase (recomendado, gratuito)
+### Supabase
 
 1. Crie uma conta em [supabase.com](https://supabase.com) e um novo projeto.
 2. No painel do projeto, clique no botão **Connect** (canto superior direito).
@@ -170,14 +170,6 @@ postgresql://postgres:SUA_SENHA@db.xxxxxxxxxxxx.supabase.co:5432/postgres
 ```
 
 > Se sua senha tiver caracteres especiais (`@ # $ % & + / : ? = !`), eles precisam ser codificados em formato de URL (ex: `!` → `%21`, `@` → `%40`) para não quebrar a connection string.
-
-### Opção B — Local com Docker
-
-```bash
-docker run --name weblock-db -e POSTGRES_PASSWORD=senha123 -e POSTGRES_DB=weblock -p 5432:5432 -d postgres
-```
-
-> Requer virtualização ativada na BIOS. Se aparecer erro de "Virtualization support not detected", use a Opção A.
 
 ### Arquivo `.env`
 
