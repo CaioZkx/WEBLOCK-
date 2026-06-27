@@ -1,11 +1,6 @@
 """Testes de CRUD de usuários — inclui os bugs corrigidos durante o desenvolvimento."""
-#OBS.: Testes unitários foram adicionados por Breno neste código. Eles estão indicados mais abaixo com comentários.
-#      Eles iniciam a partir da linha 202.
-#      Testes Unitários feitos por Francisco Breno Gomes Melo 
-
-#===============================================================================
-# Teste Feitos Francisco Breno Gomes Melo - Lista 3 (Engenharia de Software)
-#===============================================================================
+#OBS.: Testes unitários foram adicionados por Francisco Breno Gomes Melo neste código.
+#      A partir da Linha 208.
 
 # ── Permissões de acesso ──────────────────────────────────────────────────────
 
@@ -205,9 +200,10 @@ def test_buscar_usuario_por_nome(client, admin_headers):
     assert any("Maria" in u["name"] for u in body["users"])
 
 
-# ==========================
-# Testes adicionais 
-# ==========================
+
+# =============================================================================
+# Testes Unitários  - Lista 3 (Engenharia de Software)
+# =============================================================================
 
 def test_criar_usuario_com_email_invalido(client, admin_headers):
     """Verifica que o sistema rejeita um e-mail em formato inválido."""

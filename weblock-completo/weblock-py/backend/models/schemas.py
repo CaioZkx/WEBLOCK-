@@ -12,10 +12,10 @@ class TokenResponse(BaseModel):
 
 # ── Users ─────────────────────────────────────────────────────────────────────
 class UserCreate(BaseModel):
-    name: str
-    email: str
-    password: str
-    role: str
+    name: Optional[str] = None
+    email: Optional[str] = None
+    password: Optional[str] = None
+    role: Optional[str] = None
     matricula: Optional[str] = None
 
 class UserUpdate(BaseModel):

@@ -1,6 +1,10 @@
 import os
+import base64
+import hashlib
+import hmac
+import json
+import time
 from datetime import datetime, timedelta
-from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -8,6 +12,48 @@ from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 from database_config import get_db
 from models.orm_models import User
+
+try:
+    from jose import JWTError, jwt
+except ImportError:
+    class JWTError(Exception):
+        pass
+
+    def _b64url(data: bytes) -> str:
+        return base64.urlsafe_b64encode(data).decode().rstrip("=")
+
+    class _JWTCompat:
+        @staticmethod
+        def encode(payload: dict, key: str, algorithm: str = "HS256") -> str:
+            if algorithm != "HS256":
+                raise ValueError("Algoritmo não suportado.")
+            header = {"alg": algorithm, "typ": "JWT"}
+            header_segment = _b64url(json.dumps(header, separators=(",", ":")).encode())
+            payload_segment = _b64url(json.dumps(payload, separators=(",", ":")).encode())
+            signing_input = f"{header_segment}.{payload_segment}".encode()
+            signature = _b64url(hmac.new(key.encode(), signing_input, hashlib.sha256).digest())
+            return f"{header_segment}.{payload_segment}.{signature}"
+
+        @staticmethod
+        def decode(token: str, key: str, algorithms: list | None = None):
+            if algorithms and algorithms != ["HS256"]:
+                raise ValueError("Algoritmo não suportado.")
+            parts = token.split(".")
+            if len(parts) != 3:
+                raise JWTError("Token inválido.")
+            header_segment, payload_segment, signature_segment = parts
+            signing_input = f"{header_segment}.{payload_segment}".encode()
+            expected_signature = _b64url(hmac.new(key.encode(), signing_input, hashlib.sha256).digest())
+            if not hmac.compare_digest(signature_segment, expected_signature):
+                raise JWTError("Assinatura inválida.")
+            payload_bytes = base64.urlsafe_b64decode(payload_segment + "=" * (-len(payload_segment) % 4))
+            payload = json.loads(payload_bytes.decode())
+            exp = payload.get("exp")
+            if exp is not None and int(exp) < int(time.time()):
+                raise JWTError("Token expirado.")
+            return payload
+
+    jwt = _JWTCompat()
 
 load_dotenv()
 
@@ -29,7 +75,7 @@ def hash_password(password: str) -> str:
 
 def create_token(data: dict) -> str:
     payload = data.copy()
-    payload["exp"] = datetime.utcnow() + timedelta(hours=EXPIRE_H)
+    payload["exp"] = int((datetime.utcnow() + timedelta(hours=EXPIRE_H)).timestamp())
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
