@@ -24,7 +24,8 @@ def test_login_com_email_inexistente_falha(client):
 def test_login_usuario_inativo_falha(client, admin_headers):
     # Cria e desativa um usuário, depois tenta logar com ele
     client.post("/api/users", json={
-        "name": "Temp", "email": "temp@ufc.br", "password": "123456", "role": "aluno"
+        "name": "Temp", "email": "temp@ufc.br", "password": "123456", "role": "aluno",
+        "matricula": "2024101"
     }, headers=admin_headers)
     users_resp = client.get("/api/users", headers=admin_headers).json()["users"]
     temp = next(u for u in users_resp if u["email"] == "temp@ufc.br")

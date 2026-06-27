@@ -95,7 +95,8 @@ def test_criar_usuario_com_role_invalida_falha(client, admin_headers):
 def test_criar_usuario_com_email_duplicado_falha(client, admin_headers):
     # Verifica que não é possível criar um usuário com email já existente
     resp = client.post("/api/users", json={
-        "name": "Duplicado", "email": "admin@weblock.ufc.br", "password": "123456", "role": "aluno"
+        "name": "Duplicado", "email": "admin@weblock.ufc.br", "password": "123456", "role": "aluno",
+        "matricula": "2024101"
     }, headers=admin_headers)
     assert resp.status_code == 409
 
@@ -118,7 +119,8 @@ def test_criar_usuario_valido_funciona(client, admin_headers):
 def test_admin_pode_atualizar_usuario(client, admin_headers):
     # Verifica que o admin pode atualizar um usuário existente
     create = client.post("/api/users", json={
-        "name": "Editar Eu", "email": "editar@ufc.br", "password": "123456", "role": "aluno"
+        "name": "Editar Eu", "email": "editar@ufc.br", "password": "123456", "role": "aluno",
+        "matricula": "2024101"
     }, headers=admin_headers).json()
 
     resp = client.put(f"/api/users/{create['id']}", json={"name": "Nome Editado"}, headers=admin_headers)
@@ -145,7 +147,8 @@ def test_desativar_usuario_soft_delete(client, admin_headers):
     # Verifica que o usuário é desativado, mas continua na lista de usuários
     """Sem o parâmetro permanent, o usuário só é desativado (continua na lista)."""
     create = client.post("/api/users", json={
-        "name": "Desativar", "email": "desativar@ufc.br", "password": "123456", "role": "aluno"
+        "name": "Desativar", "email": "desativar@ufc.br", "password": "123456", "role": "aluno",
+        "matricula": "2024101"
     }, headers=admin_headers).json()
 
     resp = client.delete(f"/api/users/{create['id']}", headers=admin_headers)
@@ -160,7 +163,8 @@ def test_desativar_usuario_soft_delete(client, admin_headers):
 def test_excluir_usuario_permanentemente(client, admin_headers):
     """Com permanent=true, o usuário deixa de existir de fato."""
     create = client.post("/api/users", json={
-        "name": "Excluir De Vez", "email": "excluirdevez@ufc.br", "password": "123456", "role": "aluno"
+        "name": "Excluir De Vez", "email": "excluirdevez@ufc.br", "password": "123456", "role": "aluno",
+        "matricula": "2024101"
     }, headers=admin_headers).json()
 
     resp = client.delete(f"/api/users/{create['id']}?permanent=true", headers=admin_headers)
@@ -180,7 +184,8 @@ def test_excluir_usuario_inexistente_retorna_404(client, admin_headers):
 def test_aluno_nao_pode_excluir_usuario(client, aluno_headers, admin_headers):
     # Verifica que o aluno não pode excluir um usuário
     create = client.post("/api/users", json={
-        "name": "Vitima", "email": "vitima@ufc.br", "password": "123456", "role": "aluno"
+        "name": "Vitima", "email": "vitima@ufc.br", "password": "123456", "role": "aluno",
+        "matricula": "2024101"
     }, headers=admin_headers).json()
 
     resp = client.delete(f"/api/users/{create['id']}", headers=aluno_headers)
@@ -223,27 +228,29 @@ def test_criar_usuario_com_email_invalido(client, admin_headers):
 
 
 def test_criar_usuario_sem_role(client, admin_headers):
-    """Verifica que o campo role é obrigatório."""
+    """Verifica que o campo role é obrigatório (ausência detectada pelo Pydantic)."""
 
     resp = client.post("/api/users", json={
         "name": "Sem Role",
         "email": "semrole@ufc.br",
-        "password": "123456"
+        "password": "123456",
+        "matricula": "2024101"
     }, headers=admin_headers)
 
-    assert resp.status_code == 400
+    assert resp.status_code == 422
 
 
 def test_criar_usuario_sem_senha(client, admin_headers):
-    """Verifica que o campo password é obrigatório."""
+    """Verifica que o campo password é obrigatório (ausência detectada pelo Pydantic)."""
 
     resp = client.post("/api/users", json={
         "name": "Sem Senha",
         "email": "semsenha@ufc.br",
-        "role": "aluno"
+        "role": "aluno",
+        "matricula": "2024101"
     }, headers=admin_headers)
 
-    assert resp.status_code == 400
+    assert resp.status_code == 422
 
 
 def test_admin_pode_buscar_usuario_por_id(client, admin_headers):
@@ -253,7 +260,8 @@ def test_admin_pode_buscar_usuario_por_id(client, admin_headers):
         "name": "Buscar ID",
         "email": "buscarid@ufc.br",
         "password": "123456",
-        "role": "aluno"
+        "role": "aluno",
+        "matricula": "2024101"
     }, headers=admin_headers).json()
 
     resp = client.get(f"/api/users/{create['id']}", headers=admin_headers)
@@ -277,7 +285,8 @@ def test_atualizar_email_usuario(client, admin_headers):
         "name": "Atualizar Email",
         "email": "email.antigo@ufc.br",
         "password": "123456",
-        "role": "aluno"
+        "role": "aluno",
+        "matricula": "2024101"
     }, headers=admin_headers).json()
 
     resp = client.put(
@@ -297,7 +306,8 @@ def test_usuario_desativado_continua_existindo(client, admin_headers):
         "name": "Usuario Desativado",
         "email": "desativado2@ufc.br",
         "password": "123456",
-        "role": "aluno"
+        "role": "aluno",
+        "matricula": "2024101"
     }, headers=admin_headers).json()
 
     client.delete(f"/api/users/{create['id']}", headers=admin_headers)
@@ -325,7 +335,8 @@ def test_usuario_criado_possui_id(client, admin_headers):
         "name": "Com ID",
         "email": "comid@ufc.br",
         "password": "123456",
-        "role": "aluno"
+        "role": "aluno",
+        "matricula": "2024101"
     }, headers=admin_headers)
 
     body = resp.json()
@@ -340,7 +351,8 @@ def test_password_nao_e_retorno_na_busca_por_id(client, admin_headers):
         "name": "Sem Password",
         "email": "sempassword@ufc.br",
         "password": "123456",
-        "role": "aluno"
+        "role": "aluno",
+        "matricula": "2024101"
     }, headers=admin_headers).json()
 
     resp = client.get(f"/api/users/{create['id']}", headers=admin_headers)

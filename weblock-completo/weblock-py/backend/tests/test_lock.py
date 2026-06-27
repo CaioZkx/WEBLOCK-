@@ -95,7 +95,8 @@ def test_acesso_com_local_inexistente_eh_negado(client, admin_headers):
 
 def test_acesso_com_usuario_desativado_eh_negado(client, admin_headers):
     create = client.post("/api/users", json={
-        "name": "Desativado Teste", "email": "desativadoteste@ufc.br", "password": "123456", "role": "aluno"
+        "name": "Desativado Teste", "email": "desativadoteste@ufc.br", "password": "123456", "role": "aluno",
+        "matricula": "2024101"
     }, headers=admin_headers).json()
     client.delete(f"/api/users/{create['id']}", headers=admin_headers)  # soft delete
 
