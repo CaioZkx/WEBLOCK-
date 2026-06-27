@@ -118,7 +118,7 @@ pip install -r requirements.txt
 Crie o arquivo `.env` (veja [Configuração do banco de dados](#-configuração-do-banco-de-dados)) e depois rode:
 
 ```bash
-uvicorn main:app --reload --port 8000
+python -m uvicorn main:app --reload --port 8000
 ```
 
 > ⚠️ **Importante:** o comando precisa ser executado de dentro da pasta `backend/`, nunca de dentro de `routers/` ou de outra subpasta — senão o uvicorn não encontra o `main.py`.
@@ -238,7 +238,6 @@ Além disso, são gerados **30 logs de acesso** com timestamps aleatórios nas �
 - **Exclusão de usuário e de local** suporta dois modos:
   - Sem parâmetro (`DELETE /api/users/{id}`) → *soft delete*, o registro só é marcado como `active: false`, mas continua existindo.
   - Com `?permanent=true` → exclusão definitiva do banco.
-- **Usuário não pode excluir a própria conta.**
 - **Usuário inativo (soft-deleted) não consegue logar** e qualquer tentativa de acesso física é automaticamente negada.
 - **Tentativa de acesso sem `userId`** (cartão não cadastrado) gera um log com resultado negado e motivo `"Cartão não cadastrado"`, sem quebrar a aplicação.
 - **Timestamps no banco são sempre em UTC.** A conversão para horário de Brasília (UTC-3) é feita na camada de apresentação:
@@ -316,13 +315,13 @@ Os testes usam **SQLite em memória** automaticamente, isolado do banco de produ
 Dentro de `backend/`:
 
 ```bash
-pytest
+python -m pytest
 ```
 
 Para rodar um módulo específico:
 
 ```bash
-pytest tests/test_lock.py -v
+python -m pytest tests/test_lock.py -v
 ```
 
 Cada teste roda com o banco resetado e repovoado automaticamente (`conftest.py`, fixture `reset_database` com `autouse=True`), garantindo isolamento total entre os testes.
@@ -337,18 +336,3 @@ Cada teste roda com o banco resetado e repovoado automaticamente (`conftest.py`,
 | `test_lock.py` | Motor de decisão de acesso — permitido/negado, cartão não cadastrado, geração de logs |
 | `test_logs.py` | Listagem, filtro e paginação de logs |
 | `test_analytics.py` | Acesso ao dashboard por todos os perfis, estrutura dos dados retornados |
-
----
-
-## 🩺 Solução de problemas comuns
-
-| Sintoma | Causa provável | Solução |
-|---|---|---|
-| `secretOrPrivateKey must have a value` | Arquivo `.env` não foi criado | Criar `backend/.env` com `SECRET_KEY` definido |
-| `password cannot be longer than 72 bytes` | Versão do `bcrypt` incompatível com `passlib` | `pip install bcrypt==4.0.1` |
-| `Could not import module "main"` | `uvicorn` executado de dentro da pasta errada (ex: `routers/`) | Rodar sempre de dentro de `backend/` |
-| Nova rota não aparece em `/docs` mesmo após editar o arquivo | Processo antigo do `uvicorn` ainda rodando em segundo plano, ocupando a porta | `netstat -ano \| findstr :8000` → `taskkill /PID <pid> /F` → subir de novo |
-| Horário dos logs aparece 3h adiantado | Timestamp salvo em UTC sem conversão na exibição | Já corrigido em `analytics.py` (subtrai 3h nos agrupamentos); na tela de Logs o JS já converte sozinho |
-| `Rota não encontrada` ao abrir `http://localhost:8000` direto no navegador | A API não tem rota na raiz `/` | Acessar `http://localhost:8000/api/health` ou `/docs` |
-| Erro 405 "Method Not Allowed" ao excluir | Backend rodando com código antigo (sem a rota DELETE) | Reiniciar o `uvicorn` garantindo que está na pasta certa e sem processos duplicados na porta |
-
